@@ -1,0 +1,5 @@
+my_tumor_detection.keras
+model/
+__pycache__/
+*.pyc
+myenv/

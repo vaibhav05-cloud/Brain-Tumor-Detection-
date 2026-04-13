@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroScan AI — Brain Tumor Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+
+    /* ══════════════════════════════════════
+       THEME TOKENS
+    ══════════════════════════════════════ */
+    :root[data-theme="light"] {
+      --bg:           #f4f7fc;
+      --bg-soft:      #edf1f9;
+      --surface:      #ffffff;
+      --surface2:     #f8fafd;
+      --border:       #e2e8f4;
+      --border-md:    #ccd5e8;
+      --accent:       #2563eb;
+      --accent-soft:  #eff4ff;
+      --accent-mid:   #93c5fd;
+      --teal:         #0d9488;
+      --teal-soft:    #f0fdf9;
+      --text:         #0f172a;
+      --text2:        #475569;
+      --text3:        #94a3b8;
+      --success:      #059669;
+      --success-soft: #ecfdf5;
+      --warn:         #d97706;
+      --warn-soft:    #fffbeb;
+      --danger:       #dc2626;
+      --danger-soft:  #fff1f1;
+      --purple:       #7c3aed;
+      --purple-soft:  #f5f3ff;
+      --shadow-sm:    0 1px 4px rgba(15,23,42,0.06);
+      --shadow-md:    0 4px 16px rgba(15,23,42,0.08);
+      --shadow-lg:    0 12px 40px rgba(15,23,42,0.10);
+    }
+
+    :root[data-theme="dark"] {
+      --bg:           #0d1117;
+      --bg-soft:      #161b26;
+      --surface:      #1c2333;
+      --surface2:     #1a2030;
+      --border:       #2a3347;
+      --border-md:    #364158;
+      --accent:       #3b82f6;
+      --accent-soft:  #1e2d4a;
+      --accent-mid:   #60a5fa;
+      --teal:         #14b8a6;
+      --teal-soft:    #0f2d2a;
+      --text:         #e2e8f0;
+      --text2:        #94a3b8;
+      --text3:        #475569;
+      --success:      #10b981;
+      --success-soft: #0d2e22;
+      --warn:         #f59e0b;
+      --warn-soft:    #2d1f07;
+      --danger:       #f87171;
+      --danger-soft:  #2e1515;
+      --purple:       #a78bfa;
+      --purple-soft:  #1f1635;
+      --shadow-sm:    0 1px 4px rgba(0,0,0,0.3);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg:    0 12px 40px rgba(0,0,0,0.5);
+    }
+
+    /* ══════════════════════════════════════
+       BASE
+    ══════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.35s, color 0.35s;
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════════════
+       TOPBAR
+    ══════════════════════════════════════ */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .topbar-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 28px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+    }
+
+    .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+
+    .brand-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-tagline {
+      font-size: 0.65rem;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+
+    .author-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-mid);
+      border-radius: 40px;
+      padding: 6px 14px;
+    }
+
+    .author-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .author-info { display: flex; flex-direction: column; line-height: 1.25; }
+    .author-name { font-size: 0.78rem; font-weight: 600; color: var(--accent); }
+    .author-reg  { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; color: var(--text3); }
+
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 6px 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .theme-switch:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    .sw-track {
+      width: 32px; height: 18px;
+      background: var(--border-md);
+      border-radius: 9px;
+      position: relative;
+      transition: background 0.3s;
+    }
+    [data-theme="dark"] .sw-track { background: var(--accent); }
+
+    .sw-thumb {
+      position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    [data-theme="dark"] .sw-thumb { transform: translateX(14px); }
+
+    .theme-label { font-size: 0.72rem; font-weight: 500; color: var(--text2); }
+
+    /* ══════════════════════════════════════
+       PAGE LAYOUT
+    ══════════════════════════════════════ */
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 28px 80px;
+    }
+
+    /* ══════════════════════════════════════
+       PAGE HEADER
+    ══════════════════════════════════════ */
+    .page-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 24px;
+      margin-bottom: 36px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      color: var(--teal);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--teal-soft);
+      border: 1px solid rgba(13,148,136,0.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 14px;
+    }
+    .page-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .page-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .page-title span { color: var(--accent); }
+
+    .page-desc {
+      font-size: 0.93rem;
+      color: var(--text2);
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    .stats-cluster { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      box-shadow: var(--shadow-sm);
+      min-width: 170px;
+    }
+
+    .stat-chip-icon { font-size: 16px; }
+
+    .stat-chip-label {
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--text3);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-chip-val { font-weight: 600; color: var(--text); font-size: 0.78rem; }
+
+    /* ══════════════════════════════════════
+       MAIN GRID
+    ══════════════════════════════════════ */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 760px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .page-header { grid-template-columns: 1fr; }
+      .stats-cluster { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+    }
+
+    /* ══════════════════════════════════════
+       CARD
+    ══════════════════════════════════════ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .card-icon.blue { background: var(--accent-soft); }
+    .card-icon.teal { background: var(--teal-soft); }
+
+    .card-title   { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+    .card-subtitle { font-size: 0.7rem; color: var(--text3); font-family: 'IBM Plex Mono', monospace; margin-top: 1px; }
+
+    .card-body { padding: 24px; }
+
+    /* ══════════════════════════════════════
+       UPLOAD ZONE
+    ══════════════════════════════════════ */
+    .upload-zone {
+      border: 2px dashed var(--border-md);
+      border-radius: 12px;
+      padding: 44px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: var(--bg-soft);
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .upload-graphic {
+      width: 68px; height: 68px;
+      margin: 0 auto 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-md);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .upload-zone:hover .upload-graphic { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+    .upload-title { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .upload-hint  { font-size: 0.8rem; color: var(--text3); margin-bottom: 20px; }
+
+    .upload-btn-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 9px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .upload-btn-label:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .upload-formats {
+      margin-top: 14px;
+      font-size: 0.67rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--text3);
+      letter-spacing: 0.07em;
+    }
+
+    #file-input { display: none; }
+
+    /* ══════════════════════════════════════
+       PREVIEW SECTION
+    ══════════════════════════════════════ */
+    .preview-section { display: none; }
+    .preview-section.visible { display: block; }
+
+    .preview-img-frame {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      aspect-ratio: 1;
+      position: relative;
+      background: var(--bg-soft);
+      margin-bottom: 14px;
+    }
+    .preview-img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .img-badge {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 0.6rem;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .file-meta {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      margin-bottom: 14px;
+    }
+    .file-meta-name { font-size: 0.82rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .file-meta-size { font-size: 0.68rem; font-family: 'IBM Plex Mono', monospace; color: var(--text3); }
+
+    .action-row { display: flex; flex-direction: column; gap: 8px; }
+
+    .btn-analyze {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 24px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+    }
+    .btn-analyze:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.35); }
+    .btn-analyze:active { transform: translateY(0); }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-reset {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      background: transparent;
+      color: var(--text3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { color: var(--text2); border-color: var(--border-md); background: var(--bg-soft); }
+
+    .error-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: var(--danger-soft);
+      border: 1px solid rgba(220,38,38,0.2);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: var(--danger);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ══════════════════════════════════════
+       RESULT STATES
+    ══════════════════════════════════════ */
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-icon  { font-size: 2.8rem; margin-bottom: 14px; opacity: 0.25; }
+    .empty-title { font-size: 0.92rem; font-weight: 600; color: var(--text3); margin-bottom: 5px; }
+    .empty-desc  { font-size: 0.78rem; color: var(--text3); line-height: 1.6; }
+
+    .scanning-state { display: none; padding: 52px 20px; text-align: center; }
+    .scanning-state.active { display: block; }
+
+    .scan-spinner {
+      width: 52px; height: 52px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      border: 3px solid var(--border-md);
+      border-top-color: var(--accent);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .scan-label { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .scan-sub   { font-size: 0.73rem; font-family: 'IBM Plex Mono', monospace; color: var(--text3); animation: blink 1.4s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+    /* ══════════════════════════════════════
+       RESULTS PANEL
+    ══════════════════════════════════════ */
+    .results-panel { display: none; animation: fadeUp 0.4s ease; }
+    .results-panel.visible { display: block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    .result-banner {
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      border: 1px solid transparent;
+    }
+
+    .result-emoji { font-size: 2rem; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+    .result-meta  { flex: 1; min-width: 0; }
+
+    .result-badge {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 7px;
+    }
+
+    .result-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .result-desc  { font-size: 0.8rem; color: var(--text2); line-height: 1.65; }
+
+    .severity-none     { background: var(--success-soft); border-color: rgba(5,150,105,0.2); }
+    .severity-none     .result-badge  { background: rgba(5,150,105,0.12); color: var(--success); }
+    .severity-none     .result-title  { color: var(--success); }
+
+    .severity-low      { background: var(--purple-soft); border-color: rgba(124,58,237,0.2); }
+    .severity-low      .result-badge  { background: rgba(124,58,237,0.1); color: var(--purple); }
+    .severity-low      .result-title  { color: var(--purple); }
+
+    .severity-moderate { background: var(--warn-soft); border-color: rgba(217,119,6,0.2); }
+    .severity-moderate .result-badge  { background: rgba(217,119,6,0.12); color: var(--warn); }
+    .severity-moderate .result-title  { color: var(--warn); }
+
+    .severity-high     { background: var(--danger-soft); border-color: rgba(220,38,38,0.2); }
+    .severity-high     .result-badge  { background: rgba(220,38,38,0.1); color: var(--danger); }
+    .severity-high     .result-title  { color: var(--danger); }
+
+    .conf-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 15px 18px;
+      margin-bottom: 14px;
+    }
+
+    .conf-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .conf-label-text {
+      font-size: 0.68rem;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    .conf-value { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    .conf-track {
+      height: 6px;
+      background: var(--bg-soft);
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .conf-fill {
+      height: 100%;
+      border-radius: 3px;
+      width: 0;
+      transition: width 1.1s cubic-bezier(.4,0,.2,1);
+    }
+
+    .breakdown-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 15px 18px;
+    }
+
+    .breakdown-header {
+      font-size: 0.68rem;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+
+    .class-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 50px;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .class-row:last-child { margin-bottom: 0; }
+
+    .class-label { font-size: 0.78rem; font-weight: 500; color: var(--text2); }
+
+    .class-track {
+      height: 5px;
+      background: var(--bg-soft);
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .class-fill { height: 100%; border-radius: 3px; width: 0; transition: width 0.9s cubic-bezier(.4,0,.2,1); }
+
+    .class-pct { font-size: 0.7rem; font-family: 'IBM Plex Mono', monospace; color: var(--text3); text-align: right; }
+
+    /* ══════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════ */
+    .footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+    }
+
+    .footer-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-left { font-size: 0.8rem; color: var(--text2); line-height: 1.65; }
+    .footer-left strong { color: var(--text); font-weight: 600; }
+
+    .footer-right {
+      font-size: 0.68rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--text3);
+      text-align: right;
+      line-height: 1.65;
+    }
+
+    .disclaimer {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 28px 20px;
+    }
+
+    .disclaimer-strip {
+      padding: 10px 16px;
+      background: var(--warn-soft);
+      border: 1px solid rgba(217,119,6,0.2);
+      border-radius: 8px;
+      font-size: 0.7rem;
+      color: var(--warn);
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-icon">🧠</div>
+        <div class="brand-text">
+          <span class="brand-name">NeuroScan AI</span>
+          <span class="brand-tagline">Brain Tumor Detection System</span>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="author-pill">
+          <div class="author-dot"></div>
+          <div class="author-info">
+            <span class="author-name">Vaibhav Tripathi</span>
+            <span class="author-reg">REG. 2427030044</span>
+          </div>
+        </div>
+        <div class="theme-switch" id="themeSwitch" role="button" tabindex="0">
+          <div class="sw-track"><div class="sw-thumb"></div></div>
+          <span class="theme-label" id="themeLabel">Light</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE -->
+  <main class="page">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Deep Learning · Medical Imaging</div>
+        <h1 class="page-title">Brain Tumor<br/><span>Detection & Analysis</span></h1>
+        <p class="page-desc">Upload a brain MRI scan to classify tumor type using a VGG16-based deep learning model trained on clinical imaging datasets.</p>
+      </div>
+      <div class="stats-cluster">
+        <div class="stat-chip">
+          <span class="stat-chip-icon">🎯</span>
+          <div>
+            <div class="stat-chip-label">Architecture</div>
+            <div class="stat-chip-val">VGG16 Transfer Learning</div>
+          </div>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-icon">🏷️</span>
+          <div>
+            <div class="stat-chip-label">Output Classes</div>
+            <div class="stat-chip-val">4 Tumor Types</div>
+          </div>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-icon">📐</span>
+          <div>
+            <div class="stat-chip-label">Input Resolution</div>
+            <div class="stat-chip-val">128 × 128 px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+
+      <!-- LEFT: Upload -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon blue">📤</div>
+            <div>
+              <div class="card-title">Upload MRI Scan</div>
+              <div class="card-subtitle">Drag & drop or browse files</div>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div class="upload-zone" id="uploadZone">
+              <div class="upload-graphic">🫁</div>
+              <div class="upload-title">Drop your MRI scan here</div>
+              <div class="upload-hint">Supports JPG, PNG, WEBP, BMP formats</div>
+              <label class="upload-btn-label" for="file-input">📁 &nbsp;Browse Files</label>
+              <div class="upload-formats">SUPPORTED · JPG · PNG · WEBP · BMP</div>
+              <input type="file" id="file-input" accept="image/*" />
+            </div>
+
+            <div class="preview-section" id="previewSection">
+              <div class="preview-img-frame">
+                <img id="previewImg" src="" alt="MRI Preview" />
+                <div class="img-badge">MRI SCAN</div>
+              </div>
+              <div class="file-meta">
+                <div class="file-meta-name" id="fileName">—</div>
+                <div class="file-meta-size" id="fileSize">—</div>
+              </div>
+              <div class="action-row">
+                <button class="btn-analyze" id="analyzeBtn">⚡ &nbsp; Analyze MRI Scan</button>
+                <button class="btn-reset" id="resetBtn">↺ &nbsp; Upload Different Image</button>
+              </div>
+              <div class="error-msg" id="errorMsg"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div>
+        <div class="card" style="min-height: 420px;">
+          <div class="card-header">
+            <div class="card-icon teal">📊</div>
+            <div>
+              <div class="card-title">Analysis Results</div>
+              <div class="card-subtitle">Detection output & confidence scores</div>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon">🔬</div>
+              <div class="empty-title">No scan analyzed yet</div>
+              <div class="empty-desc">Upload an MRI image and click<br/>Analyze to see results here</div>
+            </div>
+
+            <div class="scanning-state" id="scanningState">
+              <div class="scan-spinner"></div>
+              <div class="scan-label">Analyzing scan...</div>
+              <div class="scan-sub">Running neural network inference</div>
+            </div>
+
+            <div class="results-panel" id="resultsPanel">
+
+              <div class="result-banner" id="resultBanner">
+                <div class="result-emoji" id="resultEmoji"></div>
+                <div class="result-meta">
+                  <div class="result-badge" id="resultBadge"></div>
+                  <div class="result-title" id="resultTitle"></div>
+                  <div class="result-desc"  id="resultDesc"></div>
+                </div>
+              </div>
+
+              <div class="conf-card">
+                <div class="conf-header">
+                  <span class="conf-label-text">Confidence Score</span>
+                  <span class="conf-value" id="confValue">—</span>
+                </div>
+                <div class="conf-track">
+                  <div class="conf-fill" id="confFill"></div>
+                </div>
+              </div>
+
+              <div class="breakdown-card">
+                <div class="breakdown-header">Class Probability Breakdown</div>
+                <div id="classBars"></div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        Developed by <strong>Vaibhav Tripathi</strong> &nbsp;·&nbsp; Registration No. <strong>2427030044</strong><br/>
+        B.Tech College Project &nbsp;—&nbsp; Deep Learning in Medical Imaging
+      </div>
+      <div class="footer-right">
+        Model: VGG16 Transfer Learning<br/>
+        Classes: Glioma · Meningioma · No Tumor · Pituitary<br/>
+        Backend: Flask + TensorFlow / Keras
+      </div>
+    </div>
+    <div class="disclaimer">
+      <div class="disclaimer-strip">
+        ⚠️ &nbsp; FOR EDUCATIONAL USE ONLY — Not a substitute for professional medical diagnosis
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const BACKEND = 'http://127.0.0.1:5000';
+
+    const html           = document.documentElement;
+    const themeSwitch    = document.getElementById('themeSwitch');
+    const themeLabel     = document.getElementById('themeLabel');
+    const uploadZone     = document.getElementById('uploadZone');
+    const fileInput      = document.getElementById('file-input');
+    const previewSection = document.getElementById('previewSection');
+    const previewImg     = document.getElementById('previewImg');
+    const fileName       = document.getElementById('fileName');
+    const fileSize       = document.getElementById('fileSize');
+    const analyzeBtn     = document.getElementById('analyzeBtn');
+    const resetBtn       = document.getElementById('resetBtn');
+    const errorMsg       = document.getElementById('errorMsg');
+    const emptyState     = document.getElementById('emptyState');
+    const scanningState  = document.getElementById('scanningState');
+    const resultsPanel   = document.getElementById('resultsPanel');
+    const resultBanner   = document.getElementById('resultBanner');
+    const resultEmoji    = document.getElementById('resultEmoji');
+    const resultBadge    = document.getElementById('resultBadge');
+    const resultTitle    = document.getElementById('resultTitle');
+    const resultDesc     = document.getElementById('resultDesc');
+    const confValue      = document.getElementById('confValue');
+    const confFill       = document.getElementById('confFill');
+    const classBars      = document.getElementById('classBars');
+
+    let selectedFile = null;
+
+    // Theme
+    themeSwitch.addEventListener('click', () => {
+      const isDark = html.dataset.theme === 'dark';
+      html.dataset.theme = isDark ? 'light' : 'dark';
+      themeLabel.textContent = isDark ? 'Light' : 'Dark';
+    });
+
+    // Upload
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault(); uploadZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('image/')) loadFile(f);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+
+    function loadFile(file) {
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        fileName.textContent = file.name;
+        fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB  ·  ${file.type}`;
+        uploadZone.style.display = 'none';
+        previewSection.classList.add('visible');
+        errorMsg.classList.remove('visible');
+        resetResults();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    resetBtn.addEventListener('click', () => {
+      selectedFile = null;
+      fileInput.value = '';
+      previewImg.src = '';
+      uploadZone.style.display = '';
+      previewSection.classList.remove('visible');
+      errorMsg.classList.remove('visible');
+      resetResults();
+    });
+
+    function resetResults() {
+      emptyState.style.display = '';
+      scanningState.classList.remove('active');
+      resultsPanel.classList.remove('visible');
+    }
+
+    // Analyze
+    analyzeBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+      analyzeBtn.disabled = true;
+      errorMsg.classList.remove('visible');
+      emptyState.style.display = 'none';
+      scanningState.classList.add('active');
+      resultsPanel.classList.remove('visible');
+
+      const fd = new FormData();
+      fd.append('image', selectedFile);
+
+      try {
+        const res  = await fetch(`${BACKEND}/predict`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        scanningState.classList.remove('active');
+        analyzeBtn.disabled = false;
+        renderResults(data);
+      } catch (err) {
+        scanningState.classList.remove('active');
+        analyzeBtn.disabled = false;
+        emptyState.style.display = '';
+        errorMsg.textContent = `⚠ ${err.message || 'Cannot connect. Make sure app.py is running on port 5000.'}`;
+        errorMsg.classList.add('visible');
+      }
+    });
+
+    function renderResults(data) {
+      const emojis  = { glioma:'🔴', meningioma:'🟣', pituitary:'🟡', notumor:'✅' };
+      const badges  = { glioma:'High Risk', meningioma:'Low Risk', pituitary:'Moderate Risk', notumor:'All Clear' };
+      const colors  = { glioma:'#dc2626', meningioma:'#7c3aed', pituitary:'#d97706', notumor:'#059669' };
+
+      resultBanner.className = `result-banner severity-${data.severity}`;
+      resultEmoji.textContent = emojis[data.prediction] || '🧠';
+      resultBadge.textContent = badges[data.prediction] || 'Result';
+      resultTitle.textContent = data.full_name;
+      resultDesc.textContent  = data.description;
+
+      const color = colors[data.prediction] || '#2563eb';
+      confValue.textContent = `${data.confidence}%`;
+      confValue.style.color = color;
+      confFill.style.background = color;
+      setTimeout(() => { confFill.style.width = `${data.confidence}%`; }, 80);
+
+      classBars.innerHTML = '';
+      const labels = { glioma:'Glioma', meningioma:'Meningioma', pituitary:'Pituitary', notumor:'No Tumor' };
+      Object.entries(data.all_scores)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([cls, pct]) => {
+          const row = document.createElement('div');
+          row.className = 'class-row';
+          row.innerHTML = `
+            <span class="class-label">${labels[cls] || cls}</span>
+            <div class="class-track"><div class="class-fill" style="background:${colors[cls]}"></div></div>
+            <span class="class-pct">${pct.toFixed(1)}%</span>
+          `;
+          classBars.appendChild(row);
+          setTimeout(() => { row.querySelector('.class-fill').style.width = `${pct}%`; }, 150);
+        });
+
+      resultsPanel.classList.add('visible');
+    }
+  </script>
+
+</body>
+</html>
