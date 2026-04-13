@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from PIL import Image
 import io
 import os
@@ -10,52 +9,61 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# ── Google Drive model auto-download ──────────────────────────────────────────
-# Paste your Google Drive file ID here (the long string from the share link)
-# Example link: https://drive.google.com/file/d/1ABCxyz123.../view
-#                                                ^^^^^^^^^^^^ this is the ID
+# ── Model Setup ──────────────────────────────────────────
+
 GDRIVE_FILE_ID = '18Uj2ykF2rAcZhw12Tvixi71eIneQL81X'
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'my_tumor_detection.keras')
 
+#  model folder bana
+BASE_DIR = os.path.dirname(__file__)
+MODEL_DIR = os.path.join(BASE_DIR, "model")
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+MODEL_PATH = os.path.join(MODEL_DIR, "my_tumor_detection.keras")
+
+#  download only if not exists
 if not os.path.exists(MODEL_PATH):
-    print("⏳ Model not found locally. Downloading from Google Drive...")
+    print("⏳ Model not found. Downloading...")
     import gdown
-    gdown.download(f'https://drive.google.com/uc?id={GDRIVE_FILE_ID}', MODEL_PATH, quiet=False)
+    gdown.download(id=GDRIVE_FILE_ID, output=MODEL_PATH, quiet=False)
     print("✅ Model downloaded successfully")
+else:
+    print("✅ Model already exists. Skipping download.")
 
+# Load model
 model = load_model(MODEL_PATH)
 print("✅ Model loaded successfully")
 
-# Order MUST match how os.listdir() read the training folders (alphabetical)
+# ── Labels ──────────────────────────────────────────
 CLASS_LABELS = ['glioma', 'meningioma', 'notumor', 'pituitary']
 
 TUMOR_INFO = {
     'pituitary': {
         'full_name': 'Pituitary Tumor',
-        'description': 'A growth that occurs in or near the pituitary gland at the base of the brain. Most are non-cancerous (benign) and slow-growing.',
+        'description': 'A growth that occurs in or near the pituitary gland at the base of the brain.',
         'severity': 'moderate',
         'color': '#f59e0b'
     },
     'glioma': {
         'full_name': 'Glioma',
-        'description': 'A type of tumor that occurs in the brain and spinal cord. Gliomas begin in the glial cells that surround and support nerve cells.',
+        'description': 'A tumor that occurs in the brain and spinal cord.',
         'severity': 'high',
         'color': '#ef4444'
     },
     'meningioma': {
         'full_name': 'Meningioma',
-        'description': 'A tumor that arises from the meninges, the membranes surrounding the brain and spinal cord. Usually benign and slow-growing.',
+        'description': 'A tumor arising from brain membranes, usually benign.',
         'severity': 'low',
         'color': '#8b5cf6'
     },
     'notumor': {
         'full_name': 'No Tumor Detected',
-        'description': 'No evidence of tumor found in the MRI scan. The brain appears healthy with no abnormal growths detected.',
+        'description': 'No tumor detected in the MRI scan.',
         'severity': 'none',
         'color': '#10b981'
     }
 }
 
+# ── Routes ──────────────────────────────────────────
 
 @app.route('/')
 def index():
@@ -68,8 +76,6 @@ def predict():
         return jsonify({'error': 'No image file provided'}), 400
 
     file = request.files['image']
-    if file.filename == '':
-        return jsonify({'error': 'Empty filename'}), 400
 
     try:
         img_bytes = file.read()
