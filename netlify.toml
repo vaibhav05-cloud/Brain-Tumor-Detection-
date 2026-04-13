@@ -1,0 +1,5 @@
+[build]
+  command = "your build command"  # jo pehle se hai wahi rakho
+
+[build.environment]
+  PYTHON_VERSION = "3.10"
