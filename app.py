@@ -37,11 +37,11 @@ from tensorflow.keras.layers import Dense, Flatten, Dropout
 from tensorflow.keras.models import load_model
 
 class PatchedDense(Dense):
-    def __init__(self, *args, **kwargs):
-        kwargs.pop('quantization_config', None)
-        super().__init__(*args, **kwargs)
+    @classmethod
+    def from_config(cls, config):
+        config.pop('quantization_config', None)
+        return super().from_config(config)
 
-# 🔥 Load model with custom_objects
 model = load_model(
     MODEL_PATH,
     compile=False,
