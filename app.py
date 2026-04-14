@@ -4,7 +4,8 @@ os.environ["TF_USE_LEGACY_KERAS"] = "1"
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
-from tensorflow.keras.models import load_model
+from tensorflow import keras
+model = keras.models.load_model(MODEL_PATH, compile=False)
 from PIL import Image
 import io
 import gdown
