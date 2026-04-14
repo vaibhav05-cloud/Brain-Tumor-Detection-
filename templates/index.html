@@ -864,7 +864,7 @@
   </footer>
 
   <script>
-     const BACKEND = ''; 
+     const BACKEND = window.location.origin; 
 
     const html           = document.documentElement;
     const themeSwitch    = document.getElementById('themeSwitch');
@@ -943,31 +943,53 @@
 
     // Analyze
     analyzeBtn.addEventListener('click', async () => {
-      if (!selectedFile) return;
-      analyzeBtn.disabled = true;
-      errorMsg.classList.remove('visible');
-      emptyState.style.display = 'none';
-      scanningState.classList.add('active');
-      resultsPanel.classList.remove('visible');
+  if (!selectedFile) return;
 
-      const fd = new FormData();
-      fd.append('image', selectedFile);
+  analyzeBtn.disabled = true;
+  errorMsg.classList.remove('visible');
+  emptyState.style.display = 'none';
+  scanningState.classList.add('active');
+  resultsPanel.classList.remove('visible');
 
-      try {
-        const res  = await fetch(`${BACKEND}/predict`, { method: 'POST', body: fd });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        scanningState.classList.remove('active');
-        analyzeBtn.disabled = false;
-        renderResults(data);
-      } catch (err) {
-        scanningState.classList.remove('active');
-        analyzeBtn.disabled = false;
-        emptyState.style.display = '';
-        errorMsg.textContent = `⚠ ${err.message || 'Cannot connect. Make sure app.py is running on port 5000.'}`;
-        errorMsg.classList.add('visible');
-      }
+  const fd = new FormData();
+  fd.append('image', selectedFile);
+
+  try {
+    const res = await fetch(`${BACKEND}/predict`, {
+      method: 'POST',
+      body: fd
     });
+
+    // 🔥 FIX: pehle text read karo
+    const text = await res.text();
+    console.log("RAW RESPONSE:", text);
+
+    // 🔥 try parse JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      throw new Error("Invalid JSON from backend");
+    }
+
+    if (!res.ok) {
+      throw new Error(data.error || "Server error");
+    }
+
+    scanningState.classList.remove('active');
+    analyzeBtn.disabled = false;
+
+    renderResults(data);
+
+  } catch (err) {
+    scanningState.classList.remove('active');
+    analyzeBtn.disabled = false;
+    emptyState.style.display = '';
+
+    errorMsg.textContent = `⚠ ${err.message}`;
+    errorMsg.classList.add('visible');
+  }
+});
 
     function renderResults(data) {
       const emojis  = { glioma:'🔴', meningioma:'🟣', pituitary:'🟡', notumor:'✅' };
