@@ -27,7 +27,7 @@ if os.path.exists(MODEL_PATH):
 print("Downloading model...")
 
 url = f"https://drive.google.com/uc?export=download&id={GDRIVE_FILE_ID}"
-gdown.download(url, MODEL_PATH, quiet=False, fuzzy=True)
+gdown.download(url, MODEL_PATH, quiet=False)
 
 print("MODEL PATH:", MODEL_PATH)
 print("FILE EXISTS:", os.path.exists(MODEL_PATH))
