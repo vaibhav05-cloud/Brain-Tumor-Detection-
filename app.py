@@ -88,6 +88,8 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    print("Request received 🔥")   # 👈 yaha add kar
+
     if 'image' not in request.files:
         return jsonify({'error': 'No image file provided'}), 400
 
@@ -100,30 +102,24 @@ def predict():
         img_array = np.array(img, dtype=np.float32)
         img_array = np.expand_dims(img_array, axis=0) / 255.0
 
+        print("Image processed ✅")   # 👈 debug
+
         predictions = model.predict(img_array)
+
+        print("Prediction done ✅")   # 👈 debug
+
         predicted_index = int(np.argmax(predictions))
         confidence = float(np.max(predictions))
 
         label = CLASS_LABELS[predicted_index]
 
-        all_scores = {
-            CLASS_LABELS[i]: float(predictions[0][i]) * 100
-            for i in range(len(CLASS_LABELS))
-        }
-
-        info = TUMOR_INFO[label]
-
         return jsonify({
             'prediction': label,
-            'full_name': info['full_name'],
-            'description': info['description'],
-            'severity': info['severity'],
-            'color': info['color'],
-            'confidence': round(confidence * 100, 2),
-            'all_scores': all_scores
+            'confidence': round(confidence * 100, 2)
         })
 
     except Exception as e:
+        print("ERROR OCCURRED ❌:", str(e))   # 👈 MOST IMPORTANT
         return jsonify({'error': str(e)}), 500
 
 
