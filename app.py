@@ -1,7 +1,12 @@
 import os
+<<<<<<< HEAD
 os.environ["TF_USE_LEGACY_KERAS"] = "0"
+=======
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
+>>>>>>> 2fac7b441f041e3e7516ada021403439e05e6252
 
 from flask import Flask, request, jsonify, render_template
+# ... baaki importsfrom flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
 import keras
@@ -30,6 +35,10 @@ if not os.path.exists(MODEL_PATH):
 else:
     print("✅ Model already exists. Skipping download.")
 
+<<<<<<< HEAD
+=======
+# Load model
+>>>>>>> 2fac7b441f041e3e7516ada021403439e05e6252
 model = load_model(MODEL_PATH, compile=False)
 print("✅ Model loaded successfully")
 
@@ -112,4 +121,8 @@ def predict():
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+=======
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+>>>>>>> 2fac7b441f041e3e7516ada021403439e05e6252
