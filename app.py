@@ -30,7 +30,7 @@ else:
     print("✅ Model already exists. Skipping download.")
 
 # Load model
-model = load_model(MODEL_PATH)
+model = load_model(MODEL_PATH, compile=False)
 print("✅ Model loaded successfully")
 
 # ── Labels ──────────────────────────────────────────
@@ -112,4 +112,4 @@ def predict():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
