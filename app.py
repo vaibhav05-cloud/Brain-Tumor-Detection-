@@ -1,15 +1,9 @@
 import os
-<<<<<<< HEAD
-os.environ["TF_USE_LEGACY_KERAS"] = "0"
-=======
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
->>>>>>> 2fac7b441f041e3e7516ada021403439e05e6252
 
 from flask import Flask, request, jsonify, render_template
-# ... baaki importsfrom flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
-import keras
 from keras.models import load_model
 from PIL import Image
 import io
@@ -20,7 +14,7 @@ CORS(app)
 
 # ── Model Setup ──────────────────────────────────────────
 
-GDRIVE_FILE_ID = '1wp3kP0-bBZRtD5eKonGo4IWVRnIIgzCy'  # ← Naya ID daalo yahan
+GDRIVE_FILE_ID = '1wp3kP0-bBZRtD5eKonGo4IWVRnIIgzCy'
 
 BASE_DIR = os.path.dirname(__file__)
 MODEL_DIR = os.path.join(BASE_DIR, "model")
@@ -29,18 +23,15 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 MODEL_PATH = os.path.join(MODEL_DIR, "my_tumor_detection_fixed.h5")
 
 if not os.path.exists(MODEL_PATH):
-    print("⏳ Model not found. Downloading...")
+    print("Model not found. Downloading...")
     gdown.download(id=GDRIVE_FILE_ID, output=MODEL_PATH, quiet=False)
-    print("✅ Model downloaded successfully")
+    print("Model downloaded successfully")
 else:
-    print("✅ Model already exists. Skipping download.")
+    print("Model already exists. Skipping download.")
 
-<<<<<<< HEAD
-=======
 # Load model
->>>>>>> 2fac7b441f041e3e7516ada021403439e05e6252
 model = load_model(MODEL_PATH, compile=False)
-print("✅ Model loaded successfully")
+print("Model loaded successfully")
 
 # ── Labels ──────────────────────────────────────────
 CLASS_LABELS = ['glioma', 'meningioma', 'notumor', 'pituitary']
@@ -48,25 +39,25 @@ CLASS_LABELS = ['glioma', 'meningioma', 'notumor', 'pituitary']
 TUMOR_INFO = {
     'pituitary': {
         'full_name': 'Pituitary Tumor',
-        'description': 'A growth that occurs in or near the pituitary gland at the base of the brain.',
+        'description': 'A growth near the pituitary gland.',
         'severity': 'moderate',
         'color': '#f59e0b'
     },
     'glioma': {
         'full_name': 'Glioma',
-        'description': 'A tumor that occurs in the brain and spinal cord.',
+        'description': 'Tumor in brain or spinal cord.',
         'severity': 'high',
         'color': '#ef4444'
     },
     'meningioma': {
         'full_name': 'Meningioma',
-        'description': 'A tumor arising from brain membranes, usually benign.',
+        'description': 'Usually benign tumor from brain membranes.',
         'severity': 'low',
         'color': '#8b5cf6'
     },
     'notumor': {
         'full_name': 'No Tumor Detected',
-        'description': 'No tumor detected in the MRI scan.',
+        'description': 'No tumor found.',
         'severity': 'none',
         'color': '#10b981'
     }
@@ -87,8 +78,7 @@ def predict():
     file = request.files['image']
 
     try:
-        img_bytes = file.read()
-        img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+        img = Image.open(io.BytesIO(file.read())).convert('RGB')
         img = img.resize((128, 128))
 
         img_array = np.array(img, dtype=np.float32)
@@ -97,6 +87,7 @@ def predict():
         predictions = model.predict(img_array)
         predicted_index = int(np.argmax(predictions))
         confidence = float(np.max(predictions))
+
         label = CLASS_LABELS[predicted_index]
 
         all_scores = {
@@ -121,8 +112,4 @@ def predict():
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-=======
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
->>>>>>> 2fac7b441f041e3e7516ada021403439e05e6252
