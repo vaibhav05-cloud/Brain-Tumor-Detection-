@@ -13,6 +13,8 @@ CORS(app)
 
 # ── Model Setup ──────────────────────────────────────────
 
+
+
 GDRIVE_FILE_ID = '1ACv0_FPAPtGfR1QOe40OFHp0l4qtl7x_'
 
 BASE_DIR = os.path.dirname(__file__)
@@ -21,14 +23,26 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 
 MODEL_PATH = os.path.join(MODEL_DIR, "model.keras")
 
-if not os.path.exists(MODEL_PATH):
-    print("Model not found. Downloading...")
-    gdown.download(id=GDRIVE_FILE_ID, output=MODEL_PATH, quiet=False)
-    print("Model downloaded successfully")
-else:
-    print("Model already exists. Skipping download.")
+# 🔥 force delete old file
+if os.path.exists(MODEL_PATH):
+    os.remove(MODEL_PATH)
+
+print("Downloading model...")
+
+url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
+gdown.download(url, MODEL_PATH, quiet=False)
+
+print("MODEL PATH:", MODEL_PATH)
+print("FILE EXISTS:", os.path.exists(MODEL_PATH))
+print("FILE SIZE:", os.path.getsize(MODEL_PATH))
 
 # Load model
+model = keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
+print("Model loaded successfully")
+
+# Load model
+print("MODEL PATH:", MODEL_PATH)
+print("FILE EXISTS:", os.path.exists(MODEL_PATH))
 model = keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
 print("Model loaded successfully")
 
