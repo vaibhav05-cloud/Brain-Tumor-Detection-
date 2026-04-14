@@ -1,36 +1,36 @@
+import os
+os.environ["TF_USE_LEGACY_KERAS"] = "0"
+
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
-from tensorflow.keras.models import load_model
+import keras
+from keras.models import load_model
 from PIL import Image
 import io
-import os
+import gdown
 
 app = Flask(__name__)
 CORS(app)
 
 # ── Model Setup ──────────────────────────────────────────
 
-GDRIVE_FILE_ID = '18Uj2ykF2rAcZhw12Tvixi71eIneQL81X'
+GDRIVE_FILE_ID = '1wp3kP0-bBZRtD5eKonGo4IWVRnIIgzCy'  # ← Naya ID daalo yahan
 
-#  model folder bana
 BASE_DIR = os.path.dirname(__file__)
 MODEL_DIR = os.path.join(BASE_DIR, "model")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-MODEL_PATH = os.path.join(MODEL_DIR, "my_tumor_detection.keras")
+MODEL_PATH = os.path.join(MODEL_DIR, "my_tumor_detection_fixed.h5")
 
-#  download only if not exists
 if not os.path.exists(MODEL_PATH):
     print("⏳ Model not found. Downloading...")
-    import gdown
     gdown.download(id=GDRIVE_FILE_ID, output=MODEL_PATH, quiet=False)
     print("✅ Model downloaded successfully")
 else:
     print("✅ Model already exists. Skipping download.")
 
-# Load model
-model = load_model(MODEL_PATH)
+model = load_model(MODEL_PATH, compile=False)
 print("✅ Model loaded successfully")
 
 # ── Labels ──────────────────────────────────────────
@@ -112,4 +112,4 @@ def predict():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
