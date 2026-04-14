@@ -19,12 +19,10 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 
 MODEL_PATH = os.path.join(MODEL_DIR, "final_model.keras")
 
-# 🔥 Always download fresh model
 if os.path.exists(MODEL_PATH):
     os.remove(MODEL_PATH)
 
 print("Downloading model...")
-
 url = f"https://drive.google.com/uc?export=download&id={GDRIVE_FILE_ID}"
 gdown.download(url, MODEL_PATH, quiet=False)
 
@@ -32,21 +30,23 @@ print("MODEL PATH:", MODEL_PATH)
 print("FILE EXISTS:", os.path.exists(MODEL_PATH))
 print("FILE SIZE:", os.path.getsize(MODEL_PATH))
 
-# ── Patched Dense to fix quantization_config error ──────
-from tensorflow.keras.layers import Dense, Flatten, Dropout
+# ── 🔥 Monkey-patch Dense BEFORE load_model ──────────────
+import keras.layers as _kl
+
+_original_dense_from_config = _kl.Dense.from_config.__func__
+
+@classmethod
+def _patched_dense_from_config(cls, config):
+    config.pop('quantization_config', None)
+    return _original_dense_from_config(cls, config)
+
+_kl.Dense.from_config = _patched_dense_from_config
+print("Dense monkey-patched successfully ✅")
+
+# ── Load Model ───────────────────────────────────────────
 from tensorflow.keras.models import load_model
 
-class PatchedDense(Dense):
-    @classmethod
-    def from_config(cls, config):
-        config.pop('quantization_config', None)
-        return super().from_config(config)
-
-model = load_model(
-    MODEL_PATH,
-    compile=False,
-    custom_objects={'Dense': PatchedDense}
-)
+model = load_model(MODEL_PATH, compile=False)
 print("Model loaded successfully ✅")
 
 # ── Labels ──────────────────────────────────────────
