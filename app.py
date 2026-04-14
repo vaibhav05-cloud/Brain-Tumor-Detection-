@@ -1,6 +1,4 @@
 import os
-
-
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
@@ -8,22 +6,21 @@ from tensorflow import keras
 from PIL import Image
 import io
 import gdown
+
 app = Flask(__name__)
 CORS(app)
 
 # ── Model Setup ──────────────────────────────────────────
 
-
-
-GDRIVE_FILE_ID = '1ACv0_FPAPtGfR1QOe40OFHp0l4qtl7x_'
+GDRIVE_FILE_ID = "1YdAjkNW0zpA4wWYzTf2HrETOnUVe5PEn"
 
 BASE_DIR = os.path.dirname(__file__)
 MODEL_DIR = os.path.join(BASE_DIR, "model")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-MODEL_PATH = os.path.join(MODEL_DIR, "model.keras")
+MODEL_PATH = os.path.join(MODEL_DIR, "final_model.keras")
 
-# 🔥 force delete old file
+# 🔥 Always download fresh model
 if os.path.exists(MODEL_PATH):
     os.remove(MODEL_PATH)
 
@@ -31,21 +28,14 @@ print("Downloading model...")
 
 url = f"https://drive.google.com/uc?export=download&id={GDRIVE_FILE_ID}"
 gdown.download(url, MODEL_PATH, quiet=False, fuzzy=True)
-print("FILE SIZE:", os.path.getsize(MODEL_PATH))
 
 print("MODEL PATH:", MODEL_PATH)
 print("FILE EXISTS:", os.path.exists(MODEL_PATH))
 print("FILE SIZE:", os.path.getsize(MODEL_PATH))
 
-# Load model
+# 🔥 Load model
 model = keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
-print("Model loaded successfully")
-
-# Load model
-print("MODEL PATH:", MODEL_PATH)
-print("FILE EXISTS:", os.path.exists(MODEL_PATH))
-model = keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
-print("Model loaded successfully")
+print("Model loaded successfully ✅")
 
 # ── Labels ──────────────────────────────────────────
 CLASS_LABELS = ['glioma', 'meningioma', 'notumor', 'pituitary']
@@ -125,5 +115,6 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 
+# ── Run ──────────────────────────────────────────
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
