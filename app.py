@@ -30,7 +30,7 @@ else:
     print("Model already exists. Skipping download.")
 
 # Load model
-model = load_model(MODEL_PATH, compile=False)
+model = model = load_model(MODEL_PATH, compile=False, safe_mode=False)
 print("Model loaded successfully")
 
 # ── Labels ──────────────────────────────────────────
