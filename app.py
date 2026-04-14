@@ -1,15 +1,13 @@
 import os
-os.environ["TF_USE_LEGACY_KERAS"] = "1"
+
 
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
 from tensorflow import keras
-model = keras.models.load_model(MODEL_PATH, compile=False)
 from PIL import Image
 import io
 import gdown
-
 app = Flask(__name__)
 CORS(app)
 
@@ -31,7 +29,7 @@ else:
     print("Model already exists. Skipping download.")
 
 # Load model
-model = load_model(MODEL_PATH, compile=False)
+model = keras.models.load_model(MODEL_PATH, compile=False)
 print("Model loaded successfully")
 
 # ── Labels ──────────────────────────────────────────
