@@ -2,7 +2,6 @@ import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
-from tensorflow import keras
 from PIL import Image
 import io
 import gdown
@@ -33,10 +32,21 @@ print("MODEL PATH:", MODEL_PATH)
 print("FILE EXISTS:", os.path.exists(MODEL_PATH))
 print("FILE SIZE:", os.path.getsize(MODEL_PATH))
 
-# 🔥 Load model
+# ── Patched Dense to fix quantization_config error ──────
+from tensorflow.keras.layers import Dense, Flatten, Dropout
 from tensorflow.keras.models import load_model
 
-model = load_model(MODEL_PATH, compile=False)
+class PatchedDense(Dense):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('quantization_config', None)
+        super().__init__(*args, **kwargs)
+
+# 🔥 Load model with custom_objects
+model = load_model(
+    MODEL_PATH,
+    compile=False,
+    custom_objects={'Dense': PatchedDense}
+)
 print("Model loaded successfully ✅")
 
 # ── Labels ──────────────────────────────────────────
@@ -120,4 +130,3 @@ def predict():
 # ── Run ──────────────────────────────────────────
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-    print("NEW DEPLOY TRIGGER 🔥")
