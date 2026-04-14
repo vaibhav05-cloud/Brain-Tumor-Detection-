@@ -4,5 +4,5 @@ numpy==1.23.5
 opencv-python
 pillow
 gdown
-tensorflow==2.13.0
+tensorflow==2.21.0
 gunicorn
