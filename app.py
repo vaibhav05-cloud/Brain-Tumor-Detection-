@@ -13,13 +13,13 @@ CORS(app)
 
 # ── Model Setup ──────────────────────────────────────────
 
-GDRIVE_FILE_ID = '1wp3kP0-bBZRtD5eKonGo4IWVRnIIgzCy'
+GDRIVE_FILE_ID = '1ACv0_FPAPtGfR1QOe40OFHp0l4qtl7x_'
 
 BASE_DIR = os.path.dirname(__file__)
 MODEL_DIR = os.path.join(BASE_DIR, "model")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-MODEL_PATH = os.path.join(MODEL_DIR, "my_tumor_detection_fixed.h5")
+MODEL_PATH = os.path.join(MODEL_DIR, "model.keras")
 
 if not os.path.exists(MODEL_PATH):
     print("Model not found. Downloading...")
