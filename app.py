@@ -34,7 +34,9 @@ print("FILE EXISTS:", os.path.exists(MODEL_PATH))
 print("FILE SIZE:", os.path.getsize(MODEL_PATH))
 
 # 🔥 Load model
-model = keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
+from tensorflow.keras.models import load_model
+
+model = load_model(MODEL_PATH, compile=False)
 print("Model loaded successfully ✅")
 
 # ── Labels ──────────────────────────────────────────
