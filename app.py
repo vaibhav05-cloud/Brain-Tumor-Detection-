@@ -6,6 +6,17 @@ from PIL import Image
 import io
 import gdown
 
+# ── ADD THIS BLOCK ──────────────────────────────────────
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+
+# Limit CPU RAM usage
+tf.config.threading.set_intra_op_parallelism_threads(1)
+tf.config.threading.set_inter_op_parallelism_threads(1)
+
 app = Flask(__name__)
 CORS(app)
 
