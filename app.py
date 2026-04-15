@@ -75,6 +75,7 @@ def predict():
     file = request.files['image']
 
     try:
+        # ── Image Processing ──
         img = Image.open(io.BytesIO(file.read())).convert('RGB')
         img = img.resize((128, 128))
 
@@ -84,7 +85,7 @@ def predict():
 
         print("Image processed ✅")
 
-        # prediction
+        # ── Prediction ──
         interpreter.set_tensor(input_details[0]['index'], img_array)
         interpreter.invoke()
         predictions = interpreter.get_tensor(output_details[0]['index'])
@@ -97,7 +98,7 @@ def predict():
 
         label = CLASS_LABELS[predicted_index]
 
-        # ✅ FINAL LOGIC
+        # ── Validation Logic ──
         if raw_confidence < 0.7:
             label = "invalid"
             info = {
@@ -106,21 +107,11 @@ def predict():
                 'severity': 'none',
                 'color': '#6b7280'
             }
-
-        elif raw_confidence > 0.95 and label != 'notumor':
-            label = "suspicious"
-            info = {
-                'full_name': 'Suspicious Input',
-                'description': 'The model is not confident this is a valid MRI.',
-                'severity': 'none',
-                'color': '#f97316'
-            }
-
         else:
             info = TUMOR_INFO[label]
 
-        # ✅ FIXED INDENTATION HERE
-        if label in ["invalid", "suspicious"]:
+        # ── Scores Handling ──
+        if label == "invalid":
             all_scores = {}
         else:
             all_scores = {
@@ -128,6 +119,7 @@ def predict():
                 for i in range(len(CLASS_LABELS))
             }
 
+        # ── Response ──
         return jsonify({
             'prediction': label,
             'confidence': round(confidence, 2),
