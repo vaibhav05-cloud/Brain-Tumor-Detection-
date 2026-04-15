@@ -4,10 +4,7 @@ from flask_cors import CORS
 import numpy as np
 from PIL import Image
 import io
-
-# ✅ TFLite import (lightweight)
 import tensorflow as tf
-interpreter = tf.lite.Interpreter(model_path="model.tflite")
 
 app = Flask(__name__)
 CORS(app)
@@ -17,8 +14,8 @@ CORS(app)
 BASE_DIR = os.path.dirname(__file__)
 MODEL_PATH = os.path.join(BASE_DIR, "model.tflite")
 
-# Load TFLite model
-interpreter = tflite.Interpreter(model_path=MODEL_PATH)
+# ✅ ONLY ONE interpreter (correct)
+interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -79,7 +76,6 @@ def predict():
     file = request.files['image']
 
     try:
-        # Image preprocessing
         img = Image.open(io.BytesIO(file.read())).convert('RGB')
         img = img.resize((128, 128))
 
@@ -89,7 +85,7 @@ def predict():
 
         print("Image processed ✅")
 
-        # TFLite prediction
+        # ✅ TFLite prediction
         interpreter.set_tensor(input_details[0]['index'], img_array)
         interpreter.invoke()
         predictions = interpreter.get_tensor(output_details[0]['index'])
@@ -120,8 +116,6 @@ def predict():
         print("ERROR OCCURRED ❌:", str(e))
         return jsonify({'error': str(e)}), 500
 
-
-# ── Run ─────────────────────────────
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 7860)))
