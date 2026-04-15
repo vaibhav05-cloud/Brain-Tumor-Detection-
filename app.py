@@ -30,7 +30,7 @@ print("MODEL PATH:", MODEL_PATH)
 print("FILE EXISTS:", os.path.exists(MODEL_PATH))
 print("FILE SIZE:", os.path.getsize(MODEL_PATH))
 
-# ── 🔥 Monkey-patch Dense BEFORE load_model ──────────────
+# ── Monkey-patch Dense BEFORE load_model ──────────────
 import keras.layers as _kl
 
 _original_dense_from_config = _kl.Dense.from_config.__func__
@@ -90,10 +90,12 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/health')
+def health():
+    return jsonify({'status': 'ok', 'model_loaded': model is not None})
+
+
 @app.route('/predict', methods=['POST'])
-def predict():
-    print("Request received 🔥")
-    @app.route('/predict', methods=['POST'])
 def predict():
     print("Request received 🔥")
 
@@ -112,38 +114,35 @@ def predict():
         img_array = np.array(img, dtype=np.float32)
         img_array = np.expand_dims(img_array, axis=0) / 255.0
 
-        print("Image processed ✅")   # 👈 debug
+        print("Image processed ✅")
 
         predictions = model.predict(img_array)
 
-        print("Prediction done ✅")   # 👈 debug
+        print("Prediction done ✅")
 
         predicted_index = int(np.argmax(predictions))
-        confidence = float(np.max(predictions))
+        confidence = float(np.max(predictions)) * 100
 
         label = CLASS_LABELS[predicted_index]
+        info = TUMOR_INFO[label]
+
+        all_scores = {
+            CLASS_LABELS[i]: round(float(predictions[0][i]) * 100, 2)
+            for i in range(len(CLASS_LABELS))
+        }
 
         return jsonify({
-    "prediction": "glioma",
-    "confidence": 92,
-    "severity": "high",
-    "full_name": "Glioma Tumor",
-    "description": "Tumor detected in brain region",
-    "all_scores": {
-        "glioma": 92,
-        "meningioma": 3,
-        "pituitary": 4,
-        "notumor": 1
-    }
-})
+            'prediction': label,
+            'confidence': round(confidence, 2),
+            'severity': info['severity'],
+            'full_name': info['full_name'],
+            'description': info['description'],
+            'all_scores': all_scores
+        })
 
     except Exception as e:
-        print("ERROR OCCURRED ❌:", str(e))   # 👈 MOST IMPORTANT
+        print("ERROR OCCURRED ❌:", str(e))
         return jsonify({'error': str(e)}), 500
-    
-@app.route('/health')
-def health():
-    return jsonify({'status': 'ok', 'model_loaded': model is not None})
 
 
 # ── Run ──────────────────────────────────────────
