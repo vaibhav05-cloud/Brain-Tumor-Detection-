@@ -46,8 +46,12 @@ print("Dense monkey-patched successfully ✅")
 # ── Load Model ───────────────────────────────────────────
 from tensorflow.keras.models import load_model
 
-model = load_model(MODEL_PATH, compile=False)
-print("Model loaded successfully ✅")
+model = None
+try:
+    model = load_model(MODEL_PATH, compile=False)
+    print("Model loaded successfully ✅")
+except Exception as e:
+    print(f"❌ Model loading failed: {e}")
 
 # ── Labels ──────────────────────────────────────────
 CLASS_LABELS = ['glioma', 'meningioma', 'notumor', 'pituitary']
@@ -88,7 +92,13 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    print("Request received 🔥")   # 👈 yaha add kar
+    print("Request received 🔥")
+    @app.route('/predict', methods=['POST'])
+def predict():
+    print("Request received 🔥")
+
+    if model is None:
+        return jsonify({'error': 'Model failed to load on server startup. Check server logs.'}), 500
 
     if 'image' not in request.files:
         return jsonify({'error': 'No image file provided'}), 400
@@ -130,6 +140,10 @@ def predict():
     except Exception as e:
         print("ERROR OCCURRED ❌:", str(e))   # 👈 MOST IMPORTANT
         return jsonify({'error': str(e)}), 500
+    
+    @app.route('/health')
+def health():
+    return jsonify({'status': 'ok', 'model_loaded': model is not None})
 
 
 # ── Run ──────────────────────────────────────────
