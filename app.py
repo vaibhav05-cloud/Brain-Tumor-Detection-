@@ -93,10 +93,32 @@ def predict():
         print("Prediction done ✅")
 
         predicted_index = int(np.argmax(predictions))
-        confidence = float(np.max(predictions)) * 100
+raw_confidence = float(np.max(predictions))   # 0–1
+confidence = raw_confidence * 100
 
-        label = CLASS_LABELS[predicted_index]
-        info = TUMOR_INFO[label]
+label = CLASS_LABELS[predicted_index]
+
+# ✅ NEW LOGIC (MAIN FIX)
+if raw_confidence < 0.7:
+    label = "invalid"
+    info = {
+        'full_name': 'Invalid Image',
+        'description': 'Please upload a valid brain MRI image.',
+        'severity': 'none',
+        'color': '#6b7280'
+    }
+
+elif raw_confidence > 0.95 and label != 'notumor':
+    label = "suspicious"
+    info = {
+        'full_name': 'Suspicious Input',
+        'description': 'The model is not confident this is a valid MRI.',
+        'severity': 'none',
+        'color': '#f97316'
+    }
+
+else:
+    info = TUMOR_INFO[label]
 
         all_scores = {
             CLASS_LABELS[i]: round(float(predictions[0][i]) * 100, 2)
