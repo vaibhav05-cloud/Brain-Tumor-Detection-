@@ -14,7 +14,6 @@ CORS(app)
 BASE_DIR = os.path.dirname(__file__)
 MODEL_PATH = os.path.join(BASE_DIR, "model.tflite")
 
-# ✅ ONLY ONE interpreter (correct)
 interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
 interpreter.allocate_tensors()
 
@@ -93,7 +92,7 @@ def predict():
         print("Prediction done ✅")
 
         predicted_index = int(np.argmax(predictions))
-        raw_confidence = float(np.max(predictions))  # 0–1
+        raw_confidence = float(np.max(predictions))
         confidence = raw_confidence * 100
 
         label = CLASS_LABELS[predicted_index]
@@ -120,10 +119,14 @@ def predict():
         else:
             info = TUMOR_INFO[label]
 
-        all_scores = {
-            CLASS_LABELS[i]: round(float(predictions[0][i]) * 100, 2)
-            for i in range(len(CLASS_LABELS))
-        }
+        # ✅ FIXED INDENTATION HERE
+        if label in ["invalid", "suspicious"]:
+            all_scores = {}
+        else:
+            all_scores = {
+                CLASS_LABELS[i]: round(float(predictions[0][i]) * 100, 2)
+                for i in range(len(CLASS_LABELS))
+            }
 
         return jsonify({
             'prediction': label,
