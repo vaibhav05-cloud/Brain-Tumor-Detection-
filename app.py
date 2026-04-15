@@ -141,7 +141,7 @@ def predict():
         print("ERROR OCCURRED ❌:", str(e))   # 👈 MOST IMPORTANT
         return jsonify({'error': str(e)}), 500
     
-    @app.route('/health')
+@app.route('/health')
 def health():
     return jsonify({'status': 'ok', 'model_loaded': model is not None})
 
