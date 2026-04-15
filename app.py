@@ -4,67 +4,29 @@ from flask_cors import CORS
 import numpy as np
 from PIL import Image
 import io
-import gdown
 
-# ── ADD THIS BLOCK ──────────────────────────────────────
-import tensorflow as tf
-gpus = tf.config.experimental.list_physical_devices('GPU')
-if gpus:
-    for gpu in gpus:
-        tf.config.experimental.set_memory_growth(gpu, True)
-
-# Limit CPU RAM usage
-tf.config.threading.set_intra_op_parallelism_threads(1)
-tf.config.threading.set_inter_op_parallelism_threads(1)
+# ✅ TFLite import (lightweight)
+import tflite_runtime.interpreter as tflite
 
 app = Flask(__name__)
 CORS(app)
 
-# ── Model Setup ──────────────────────────────────────────
-
-GDRIVE_FILE_ID = "1YdAjkNW0zpA4wWYzTf2HrETOnUVe5PEn"
+# ── Model Setup ─────────────────────────────
 
 BASE_DIR = os.path.dirname(__file__)
-MODEL_DIR = os.path.join(BASE_DIR, "model")
-os.makedirs(MODEL_DIR, exist_ok=True)
+MODEL_PATH = os.path.join(BASE_DIR, "model.tflite")
 
-MODEL_PATH = os.path.join(MODEL_DIR, "final_model.keras")
+# Load TFLite model
+interpreter = tflite.Interpreter(model_path=MODEL_PATH)
+interpreter.allocate_tensors()
 
-if os.path.exists(MODEL_PATH):
-    os.remove(MODEL_PATH)
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
-print("Downloading model...")
-url = f"https://drive.google.com/uc?export=download&id={GDRIVE_FILE_ID}"
-gdown.download(url, MODEL_PATH, quiet=False)
+print("TFLite model loaded successfully ✅")
 
-print("MODEL PATH:", MODEL_PATH)
-print("FILE EXISTS:", os.path.exists(MODEL_PATH))
-print("FILE SIZE:", os.path.getsize(MODEL_PATH))
+# ── Labels ─────────────────────────────
 
-# ── Monkey-patch Dense BEFORE load_model ──────────────
-import keras.layers as _kl
-
-_original_dense_from_config = _kl.Dense.from_config.__func__
-
-@classmethod
-def _patched_dense_from_config(cls, config):
-    config.pop('quantization_config', None)
-    return _original_dense_from_config(cls, config)
-
-_kl.Dense.from_config = _patched_dense_from_config
-print("Dense monkey-patched successfully ✅")
-
-# ── Load Model ───────────────────────────────────────────
-from tensorflow.keras.models import load_model
-
-model = None
-try:
-    model = load_model(MODEL_PATH, compile=False)
-    print("Model loaded successfully ✅")
-except Exception as e:
-    print(f"❌ Model loading failed: {e}")
-
-# ── Labels ──────────────────────────────────────────
 CLASS_LABELS = ['glioma', 'meningioma', 'notumor', 'pituitary']
 
 TUMOR_INFO = {
@@ -94,7 +56,7 @@ TUMOR_INFO = {
     }
 }
 
-# ── Routes ──────────────────────────────────────────
+# ── Routes ─────────────────────────────
 
 @app.route('/')
 def index():
@@ -103,15 +65,12 @@ def index():
 
 @app.route('/health')
 def health():
-    return jsonify({'status': 'ok', 'model_loaded': model is not None})
+    return jsonify({'status': 'ok'})
 
 
 @app.route('/predict', methods=['POST'])
 def predict():
     print("Request received 🔥")
-
-    if model is None:
-        return jsonify({'error': 'Model failed to load on server startup. Check server logs.'}), 500
 
     if 'image' not in request.files:
         return jsonify({'error': 'No image file provided'}), 400
@@ -119,15 +78,20 @@ def predict():
     file = request.files['image']
 
     try:
+        # Image preprocessing
         img = Image.open(io.BytesIO(file.read())).convert('RGB')
         img = img.resize((128, 128))
 
         img_array = np.array(img, dtype=np.float32)
-        img_array = np.expand_dims(img_array, axis=0) / 255.0
+        img_array = img_array / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
 
         print("Image processed ✅")
 
-        predictions = model.predict(img_array)
+        # TFLite prediction
+        interpreter.set_tensor(input_details[0]['index'], img_array)
+        interpreter.invoke()
+        predictions = interpreter.get_tensor(output_details[0]['index'])
 
         print("Prediction done ✅")
 
@@ -156,6 +120,7 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 
-# ── Run ──────────────────────────────────────────
+# ── Run ─────────────────────────────
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 7860)))

@@ -2,7 +2,4 @@
 flask-cors
 numpy
 pillow
-gdown
-gunicorn
-tensorflow-cpu
-keras
+tflite-runtime
