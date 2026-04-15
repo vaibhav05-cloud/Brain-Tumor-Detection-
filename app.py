@@ -6,7 +6,8 @@ from PIL import Image
 import io
 
 # ✅ TFLite import (lightweight)
-import tflite_runtime.interpreter as tflite
+import tensorflow as tf
+interpreter = tf.lite.Interpreter(model_path="model.tflite")
 
 app = Flask(__name__)
 CORS(app)
